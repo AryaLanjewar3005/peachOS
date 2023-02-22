@@ -1,6 +1,5 @@
 ORG 0
 BITS 16
-message: db "Hello World!", 0
 
 _start:
     jmp short start
@@ -10,6 +9,9 @@ times 33 db 0
 
 start:
     jmp 0x7c0:step2
+
+
+
     
 step2:
     cli ; Clears interrupts
@@ -21,12 +23,22 @@ step2:
     mov sp, 0x7c00
     sti ; Enables Interrupts
 
+    mov ah,2
+    mov al,1
+    mov ch,0
+    mov cl,2
+    mov dh,0
+    mov bx,buffer
+    int 0x13
+    jc error
 
-    mov si, message
+    mov si,buffer
     call print
     jmp $
 
-
+error:
+    mov si, error_message
+    call print
 
 print:
     mov bx,0
@@ -43,5 +55,11 @@ print_char:
     mov ah,0eh
     int 0x10
     ret
+
+
+error_message: db 'failed to load sector'
+
 times 510-($ - $$) db 0
 dw 0xAA55
+
+buffer:
